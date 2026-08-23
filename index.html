@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2015 US Superstore Performance & Diagnostic Deck</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-warning: #f59e0b;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Slide Container */
+        .deck-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: scale(0.98);
+            padding: 3rem 5rem 5rem 5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        /* Typography */
+        .slide-header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1rem;
+        }
+
+        .slide-subtitle {
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            color: var(--accent-blue);
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+        }
+
+        p, li {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Layout Grids */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            flex-grow: 1;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        .metric-large {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .text-green { color: var(--accent-green); }
+        .text-red { color: var(--accent-red); }
+        .text-blue { color: var(--accent-blue); }
+        .text-warning { color: var(--accent-warning); }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        td {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Controls Footer */
+        .controls {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 5rem;
+            right: 5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--card-border);
+            padding-top: 1rem;
+        }
+
+        .nav-buttons button {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.5rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .nav-buttons button:hover {
+            background: var(--card-border);
+        }
+
+        .slide-counter {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Special Visual Helpers */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-red { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        .badge-green { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); }
+        .badge-blue { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+
+        ul.styled-list {
+            list-style-type: none;
+        }
+
+        ul.styled-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        ul.styled-list li::before {
+            content: "■";
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+            font-size: 0.8rem;
+            top: 0.2rem;
+        }
+
+        .title-slide {
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .title-slide h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .title-slide p {
+            font-size: 1.4rem;
+            max-width: 800px;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="deck-container">
+
+    <div class="slide slide-1 active title-slide">
+        <div class="slide-subtitle">Financial Diagnostics & Audit Report [cite: 208, 309]</div>
+        <h1>2015 US Superstore Performance:<br><span class="text-blue">Uncovering the Margin Leaks</span> </h1>
+        <p>Executive Diagnostic & Strategic Turnaround Plan for H2 & Beyond [cite: 208]</p>
+        <div style="display: flex; gap: 2rem; margin-top: 1rem;">
+            <div>
+                <span class="slide-subtitle">Prepared By</span>
+                <p style="color: var(--text-main); font-weight: 600;">Data Analytics Team</p>
+            </div>
+            <div>
+                <span class="slide-subtitle">Scope</span>
+                <p style="color: var(--text-main); font-weight: 600;">2015 Full-Year Performance Audit [cite: 161, 207]</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide slide-2">
+        <div class="slide-header">
+            <div class="slide-subtitle">Overview</div>
+            <h2>Executive Performance Summary [cite: 161, 208]</h2>
+        </div>
+        <div class="grid-4" style="flex-grow: 0; margin-bottom: 1.5rem;">
+            <div class="card">
+                <div class="slide-subtitle">Top-Line Revenue [cite: 210, 211]</div>
+                <div class="metric-large text-blue">$1.92M [cite: 163, 212]</div>
+                <p>$320.7k Avg. Monthly [cite: 170, 217]</p>
+            </div>
+            <div class="card">
+                <div class="slide-subtitle">Overall Margin [cite: 227]</div>
+                <div class="metric-large text-green">11.64% [cite: 163, 227]</div>
+                <p>Net profit baseline [cite: 163]</p>
+            </div>
+            <div class="card">
+                <div class="slide-subtitle">H1 Growth Velocity [cite: 223]</div>
+                <div class="metric-large text-blue">+15.9% [cite: 170, 224]</div>
+                <p>Strong sales momentum [cite: 170, 230]</p>
+            </div>
+            <div class="card">
+                <div class="slide-subtitle">Primary Risk [cite: 170]</div>
+                <div class="metric-large text-red">-$14.4k [cite: 163, 245]</div>
+                <p>South Region Deficit [cite: 163, 248]</p>
+            </div>
+        </div>
+        <div class="card" style="flex-grow: 1;">
+            <div class="card-header">Diagnostic Key Takeaway</div>
+            <p style="font-size: 1.2rem; line-height: 1.7;">
+                While overall business revenue reached <strong class="text-main">$1,924,337.88</strong> with an average profit margin of <strong class="text-green">11.64%</strong> [cite: 163, 212], strong top-line velocity is masking severe regional and category-level profit erosion[cite: 163, 230]. Healthy coastal margins (14.4%+) are actively subsidizing systemic losses in the South Region (-4.04% margin) [cite: 163, 246, 251] and heavy freight inefficiencies[cite: 171, 313].
+            </p>
+        </div>
+    </div>
+
+    <div class="slide slide-3">
+        <div class="slide-header">
+            <div class="slide-subtitle">Geographic Analysis</div>
+            <h2>Severe Regional Divergence [cite: 162]</h2>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">Regional Performance Breakdown</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Region</th>
+                            <th>Total Sales</th>
+                            <th>Net Profit</th>
+                            <th>Margin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>East</strong></td>
+                            <td>$592,171.49 [cite: 177, 241]</td>
+                            <td class="text-green">$85,291.40 [cite: 170, 242]</td>
+                            <td><span class="badge badge-green">14.4%</span> [cite: 170, 243]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>West</strong></td>
+                            <td>$526,776.57 [cite: 177, 233]</td>
+                            <td class="text-green">$75,844.79 [cite: 170, 234]</td>
+                            <td><span class="badge badge-green">14.4%</span> [cite: 170, 235]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Central</strong></td>
+                            <td>$448,284.70 [cite: 177, 237]</td>
+                            <td class="text-green">Positive</td>
+                            <td><span class="badge badge-green">14.0 - 17.0%</span> [cite: 164, 238]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>South</strong></td>
+                            <td>$357,105.12 [cite: 177, 245]</td>
+                            <td class="text-red">-$14,424.05 [cite: 163, 245]</td>
+                            <td><span class="badge badge-red">-4.04%</span> [cite: 163, 251]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>North</strong></td>
+                            <td>$0.00 [cite: 170, 239]</td>
+                            <td>$0.00 [cite: 170]</td>
+                            <td><span class="badge badge-blue">Data Audit Req.</span> [cite: 170, 265]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <div class="card-header">Regional Insights & Data Anomaly</div>
+                <ul class="styled-list">
+                    <li><strong class="text-main">Southern Drag:</strong> Generating over $357k in revenue in the South yielded a <span class="text-red">-$14,424.05 net loss</span>[cite: 163, 245, 254].</li>
+                    <li><strong class="text-main">Coastal Subsidies:</strong> Strong performances in East ($85.2k profit) [cite: 170, 242] and West ($75.8k profit) [cite: 170, 234] keep overall business metrics net positive[cite: 163, 246].</li>
+                    <li><strong class="text-main">North Region Audit Flag ($0.00 Sales):</strong> [cite: 170, 239] Immediate investigation required to determine whether $0.00 represents an unpenetrated geographic opportunity [cite: 170, 262, 264] or a critical CRM/data mapping pipeline error[cite: 170, 259, 261].</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide slide-4">
+        <div class="slide-header">
+            <div class="slide-subtitle">Loss Diagnostics</div>
+            <h2>The South Deficit: Isolating the Culprits [cite: 248, 249]</h2>
+        </div>
+        <div class="grid-3">
+            <div class="card" style="border-left: 4px solid var(--accent-red);">
+                <div class="card-header">Telephones & Comm.</div>
+                <div class="metric-large text-red">-$12,904.99 [cite: 165, 253]</div>
+                <p style="margin-bottom: 1rem;">Net Loss in South Region [cite: 165, 253]</p>
+                <p>Represents <strong>89.5%</strong> of the total Southern region net deficit[cite: 163, 165, 245, 253]. Driven by unoptimized vendor contracts and heavy discount structures[cite: 170, 175, 319].</p>
+            </div>
+            <div class="card" style="border-left: 4px solid var(--accent-red);">
+                <div class="card-header">Envelopes Sub-Category</div>
+                <div class="metric-large text-red">-$4,321.13 [cite: 165, 252]</div>
+                <p style="margin-bottom: 1rem;">Net Loss in South Region [cite: 165, 252]</p>
+                <p>Severe cost-basis distortion causing pure margin drain despite steady volume[cite: 165, 320]. Requires cost-basis audit[cite: 320].</p>
+            </div>
+            <div class="card" style="border-left: 4px solid var(--accent-green);">
+                <div class="card-header">Turnaround Potential</div>
+                <div class="metric-large text-green">+$14.4k [cite: 170, 322]</div>
+                <p style="margin-bottom: 1rem;">Immediate Recovery Opportunity [cite: 170, 322]</p>
+                <p>Fixing vendor contracts and freight structures in these two categories will immediately convert a $357k revenue stream into profitable yield[cite: 203, 319, 322].</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide slide-5">
+        <div class="slide-header">
+            <div class="slide-subtitle">Category Analysis</div>
+            <h2>Product Sub-Category Profitability Matrix [cite: 166, 267]</h2>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header" style="color: var(--accent-green);">Profit Engines & Winners [cite: 168, 271]</div>
+                <ul class="styled-list">
+                    <li>
+                        <strong class="text-main">Binders & Binder Accessories:</strong> [cite: 168, 272]<br>
+                        Generated <span class="text-green">$59,296.39 profit</span> at an industry-leading <span class="text-green">31.89% margin</span>[cite: 168, 272].
+                    </li>
+                    <li>
+                        <strong class="text-main">Chairs & Chairmats:</strong> [cite: 168, 270]<br>
+                        Solid performance generating <span class="text-green">$48,695.84 net profit</span>[cite: 168, 270].
+                    </li>
+                    <li>
+                        <strong class="text-main">Telephones & Comm. (Overall):</strong> [cite: 168, 273]<br>
+                        Generated <span class="text-green">$40,790.51 profit</span> enterprise-wide, despite South losses[cite: 168, 273].
+                    </li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-header" style="color: var(--accent-red);">Bleeders & Cash Traps [cite: 275, 279]</div>
+                <ul class="styled-list">
+                    <li>
+                        <strong class="text-main">Tables (The Sinkhole):</strong> [cite: 169, 287]<br>
+                        Total net loss of <span class="text-red">-$7,240.07</span> (-3.74% margin)[cite: 169, 277, 278, 288]. Driven heavily by East (-$10.6k) and Central (-$8.1k) deficits[cite: 169, 289].
+                    </li>
+                    <li>
+                        <strong class="text-main">Office Machines (The Illusion):</strong> [cite: 170, 280, 291]<br>
+                        Top revenue generator (<span class="text-blue">$318,169.68</span>) [cite: 170, 281, 292] but yields an anemic net margin of just <span class="text-warning">2.77%</span> due to high freight overhead[cite: 170, 282, 293, 302].
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide slide-6">
+        <div class="slide-header">
+            <div class="slide-subtitle">Logistics Audit</div>
+            <h2>High Logistics Overhead on Heavy Cargo [cite: 171, 313]</h2>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">Shipping Mode Margin Friction</div>
+                <p style="margin-bottom: 1rem;">
+                    Heavy physical items (Tables, Office Machines, Jumbo Drums) shipped via <strong>Delivery Truck</strong> act as a primary margin anchor[cite: 172, 300, 302, 307].
+                </p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Shipping Mode</th>
+                            <th>Freight Cost</th>
+                            <th>Cost Share</th>
+                            <th>Net Profit Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Delivery Truck</strong></td>
+                            <td class="text-red">$12,137.80 [cite: 172, 302]</td>
+                            <td><span class="badge badge-red">52.2%</span> [cite: 172, 301]</td>
+                            <td class="text-red">Erases margins on heavy goods [cite: 307]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Regular Air</strong></td>
+                            <td class="text-green">$10,984.57 [cite: 173, 306]</td>
+                            <td><span class="badge badge-green">47.8%</span></td>
+                            <td class="text-green">Generates $149,751.80 Net Profit [cite: 173, 305]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card" style="justify-content: center;">
+                <div class="card-header" style="color: var(--accent-warning);">Root Cause Synergy [cite: 315]</div>
+                <p style="font-size: 1.1rem; line-height: 1.8;">
+                    Maximum margin erosion occurs predictably at the exact intersection of:
+                </p>
+                <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 6px; margin: 1rem 0; border-left: 3px solid var(--accent-warning);">
+                    1. <strong>Heavy Cargo:</strong> Low-yield goods (Tables/Machines) [cite: 310]<br>
+                    2. <strong>Ground Transport:</strong> High-cost Delivery Trucks / Jumbo Drums [cite: 313]<br>
+                    3. <strong>Unoptimized Vendor Terms:</strong> Southern/Central regional contracts [cite: 312]
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide slide-7">
+        <div class="slide-header">
+            <div class="slide-subtitle">Turnaround Action Plan</div>
+            <h2>Four Pillars for 2016 Profit Optimization [cite: 174, 317]</h2>
+        </div>
+        <div class="grid-2">
+            <div class="card" style="border-top: 4px solid var(--accent-blue);">
+                <div class="card-header">1. Fix the South Region [cite: 317]</div>
+                <p>Immediately audit pricing and vendor contracts for <strong>Telephones & Communication</strong> and <strong>Envelopes</strong> in the South to erase the -$14.4k loss[cite: 175, 203, 319, 321].</p>
+            </div>
+            <div class="card" style="border-top: 4px solid var(--accent-warning);">
+                <div class="card-header">2. Floor Machines & Restructure Tables [cite: 176]</div>
+                <p>Apply strict minimum margin floors on $318k Office Machine sales[cite: 176]. Aggressively reprice or discontinue <strong>Tables</strong> in East (-$10.6k) and Central (-$8.1k)[cite: 169, 176].</p>
+            </div>
+            <div class="card" style="border-top: 4px solid var(--accent-red);">
+                <div class="card-header">3. Freight & Hub Overhaul</div>
+                <p>Shift heavy cargo away from high-cost Delivery Truck freight (52.2% overhead) [cite: 172, 301] toward optimized regional distribution hubs to protect category viability[cite: 170].</p>
+            </div>
+            <div class="card" style="border-top: 4px solid var(--accent-green);">
+                <div class="card-header">4. Double Down on Winners [cite: 170]</div>
+                <p>Reallocate capital and inventory toward high-performing regions (East/West ~14.4% margins) [cite: 170] and top profit margin categories like Binders (31.89% margin)[cite: 168, 170].</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <div class="slide-counter">Slide <span id="current-slide">1</span> of <span id="total-slides">7</span></div>
+    <div class="nav-buttons">
+        <button id="prev-btn" onclick="changeSlide(-1)">← Previous</button>
+        <button id="next-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    document.getElementById('total-slides').textContent = totalSlides;
+
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active');
+            if (i === index) {
+                slide.classList.add('active');
+            }
+        });
+        document.getElementById('current-slide').textContent = index + 1;
+    }
+
+    function changeSlide(direction) {
+        currentSlide += direction;
+        if (currentSlide < 0) {
+            currentSlide = 0;
+        } else if (currentSlide >= totalSlides) {
+            currentSlide = totalSlides - 1;
+        }
+        showSlide(currentSlide);
+    }
+
+    // Keyboard Navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'Space') {
+            changeSlide(1);
+        } else if (e.key === 'ArrowLeft') {
+            changeSlide(-1);
+        }
+    });
+</script>
+
+</body>
+</html>
